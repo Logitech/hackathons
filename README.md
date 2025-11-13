@@ -1,3 +1,3 @@
-# Lauzhack 2023 resources
+# Hackathon resources
 
 Go to website [here](https://logitech.github.io/hackathons).
