@@ -1,31 +1,49 @@
+# Resources / SDK
 
-![](img/logitech-lauzhack23.png)
+## PC Peripherals
 
+- [Logi Actions SDK](https://logitech.github.io/actions-sdk-docs/)
+  - Supported devices:
+    - MX Creative Console (MX Keypad, MX Dialpad)
+    - MX Master 4
+    - Actions Ring
 
-This year the Logitech challenge is about prototyping creative answers to the following question:
-
-**How might we unleash creative potential of knowledge workers, digital creators, and SW developers, using our devices and applications along with AI services?**
-
-
-
-## Present your demo at our booth for a chance to win an amazing prize
-- Ready to take up our challenge?, make sure to register at our booth and borrow some Logitech gear.
-
-- Each team will get 5 minutes to show a demo on Sunday at 12 (when hacking ends).
-
-- We highly recommend you to prepare a short video showing your demo at its best. It can help you to avoid the 'demo effect'.
-
-# Resources
-- Logitech Options+ plug-ins [SDK](./options-plus/)
 - Loupdeck [SW](https://support.loupedeck.com/downloads) and [SDK](https://support.loupedeck.com/getting-started)
-- [Input Device Monitor SDK](./devmon/) : **hack into our devices!** Spy or capture device events! (supports only MX devices)
-- [SDKs](https://www.logitechg.com/en-us/innovation/developer-lab.html) for our gaming devices
-- [Getting started with realtime pose estimation](./fastPose/) and [human pose estimation using OpenCV](https://www.learnopencv.com/deep-learning-based-human-pose-estimation-using-opencv-cpp-python/)
 - [LITRA Light Library](https://github.com/lnovelli/litra-lx)
-  
-# Support
 
-For support, you can either ping us on [Discord](https://discord.com/channels/1079762641309925406/1178706240306696232) or just come to our booth!
+## XR
+
+- MX Ink Stylus [SDK](https://logitech.github.io/mxink/)
+
+## Gaming
+
+- Partner Developer Lab [SDKs](https://www.logitechg.com/en-us/programs/partner-developer-lab) for our gaming devices
+
+- [LED Illumination SDK](https://www.logitechg.com/sdk/LED_SDK_9.00.zip)
+- [G-Key Macro SDK](https://www.logitechg.com/sdk/GkeySDK_8.57.148.zip)
+- [ARX Control SDK](https://www.logitechg.com/sdk/ARX_8.87.zip)
+- [Game panel SDK](https://www.logitechg.com/sdk/LCDSDK_8.57.148.zip)
+- [Steering Wheel SDK](https://www.logitechg.com/sdk/LogitechSteeringWheelSDK_8.75.30.zip)
+
+## Other resources
+
+- Input event capture docs (Win [here](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowshookexa?redirectedfrom=MSDN) and [there](https://learn.microsoft.com/en-us/windows/win32/inputdev/raw-input?redirectedfrom=MSDN), [OSX](https://developer.apple.com/documentation/coregraphics/quartz-event-services), [Linux](https://www.freedesktop.org/wiki/Software/libevdev/))
+- Input event injections docs (Win [here](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-keybd_event?redirectedfrom=MSDN) and [there](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput?redirectedfrom=MSDN), OSX [here](https://developer.apple.com/documentation/coregraphics/cgevent/init(keyboardeventsource:virtualkey:keydown:)) and [there](https://developer.apple.com/documentation/coregraphics/cgevent/post(tap:)), [Linux](https://pypi.org/project/python-uinput/))
+- Input event capture example ([Win / C\#](./res/InputLogger.zip))
+- **MX Keypad** WebHID library ([source](https://github.com/Julusian/node-logitech-mx-creative-console), [demo](https://julusian.github.io/node-logitech-mx-creative-console/))
+
+## Support & Community
+
+- MX collective -> [Discord channel](https://discord.gg/eYGbhJdSu8)
+- For Actions SDK & MX devices -> [Discord channel](https://discord.gg/8TWwHWuymm)
+
+## Past events
+
+- [Lauzhack 2023](./lauzhack2023.md)
+- [Lauzhack 2019](https://logitech.github.io/lauzhack2019/)
+- [Lauzhack 2018](https://logitech.github.io/LauzHack2018/)
+- [Lauzhack 2017](https://logitech.github.io/lauzhack2017/)
+- [HackZurich 2020](https://logitech.github.io/hackzurich2020/)
 
 <div style="text-align:center">
     <a href="https://www.logitech.com"><img src="img/logitech.png"></a>
