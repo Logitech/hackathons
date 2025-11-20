@@ -2,18 +2,42 @@
 
 ## PC Peripherals
 
-- [Logi Actions SDK](https://logitech.github.io/actions-sdk-docs/)
-  - Supported devices:
-    - MX Creative Console (MX Keypad, MX Dialpad)
-    - MX Master 4
+- Actions SDK
+  - When:
+    - Build a Plugin to connect your app/service to our devices
+  - Supported Devices:
+    - MX Creative Console (MX Keypad, MX dialpad)
     - Actions Ring
-
-- Loupdeck [SW](https://support.loupedeck.com/downloads) and [SDK](https://support.loupedeck.com/getting-started)
-- [LITRA Light Library](https://github.com/lnovelli/litra-lx)
+    - MX Master 4
+  - Getting started:
+    - [Building your first plugin tutorial]((https://logitech.github.io/actions-sdk-docs/csharp/haptics-tutorial/))
+  - Resources links
+    - [Documentation](https://logitech.github.io/actions-sdk-docs/)
+    - [Demo Plugin Template](https://github.com/Logitech/actions-sdk)
+    - [SDK documentation for Agents](./res/LogiActionSDK_agent_doc.zip)
+    - [Haptics functionality](https://logitech.github.io/actions-sdk-docs/csharp/Haptics-Overview/)
+- Lights
+  - [LITRA Light Library](https://github.com/lnovelli/litra-lx)
 
 ## XR
 
-- MX Ink Stylus [SDK](https://logitech.github.io/mxink/)
+- MX Ink Stylus SDK
+  - When:
+    - Build a Mixed Reality app for Meta Quest headsets
+  - Supported Devices:
+    - Logitech MX Ink
+  - Getting Started:
+    - [Adding MX Ink Support to a Unity App](https://logitech.github.io/mxink/UnityIntegration.html)
+    - [MX Ink Unity Integration Package](https://logitech.github.io/mxink/UnityIntegration.html#using-the-mx-ink-openxr-interaction-profile-in-a-unity-application)
+    - MX Ink SDK [website](https://logitech.github.io/mxink/)
+- Logitech Muse
+  - When:
+    - Build a spatial app for Apple Vision Pro
+  - Supported Devices:
+    - Logitech Muse
+  - Getting Started:
+    - [Explore spatial accessory input on visionOS](https://developer.apple.com/videos/play/wwdc2025/289/)
+    - [Logitech Muse: tracking, input buttons and haptics in RealityKit](https://gist.github.com/Matt54/4b22cf092abb2478894c1e68f948dd15)
 
 ## Gaming
 
