@@ -10,7 +10,7 @@
     - Actions Ring
     - MX Master 4
   - Getting started:
-    - [Building your first plugin tutorial]((https://logitech.github.io/actions-sdk-docs/csharp/haptics-tutorial/))
+    - [Building your first plugin tutorial](https://logitech.github.io/actions-sdk-docs/csharp/haptics-tutorial/)
   - Resources links
     - [Documentation](https://logitech.github.io/actions-sdk-docs/)
     - [Demo Plugin Template](https://github.com/Logitech/actions-sdk)
