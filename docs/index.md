@@ -2,14 +2,22 @@
 
 ## PC Peripherals
 
-- [Logi Actions SDK](https://logitech.github.io/actions-sdk-docs/)
-  - Supported devices:
-    - MX Creative Console (MX Keypad, MX Dialpad)
-    - MX Master 4
+- Actions SDK
+  - When:
+    - Build a Plugin to connect your app/service to our devices
+  - Supported Devices:
+    - MX Creative Console (MX Keypad, MX dialpad)
     - Actions Ring
-
-- Loupdeck [SW](https://support.loupedeck.com/downloads) and [SDK](https://support.loupedeck.com/getting-started)
-- [LITRA Light Library](https://github.com/lnovelli/litra-lx)
+    - MX Master 4
+  - Getting started:
+    - [Building your first plugin tutorial]((https://logitech.github.io/actions-sdk-docs/csharp/haptics-tutorial/))
+  - Resources links
+    - [Documentation](https://logitech.github.io/actions-sdk-docs/)
+    - [Demo Plugin Template](https://github.com/Logitech/actions-sdk)
+    - [SDK documentation for Agents](./res/LogiActionSDK_agent_doc.zip)
+    - [Haptics functionality](https://logitech.github.io/actions-sdk-docs/csharp/Haptics-Overview/)
+- Lights
+  - [LITRA Light Library](https://github.com/lnovelli/litra-lx)
 
 ## XR
 
