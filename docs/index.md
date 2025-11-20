@@ -17,7 +17,7 @@
     - [SDK documentation for Agents](./res/LogiActionSDK_agent_doc.zip)
     - [Haptics functionality](https://logitech.github.io/actions-sdk-docs/csharp/Haptics-Overview/)
 - Lights
-  - [LITRA Light Library](https://github.com/lnovelli/litra-lx)
+  - [LITRA Light command line tool (js)](https://github.com/timrogers/litra)
 
 ## XR
 
