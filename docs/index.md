@@ -21,7 +21,23 @@
 
 ## XR
 
-- MX Ink Stylus [SDK](https://logitech.github.io/mxink/)
+- MX Ink Stylus SDK
+  - When:
+    - Build a Mixed Reality app for Meta Quest headsets
+  - Supported Devices:
+    - Logitech MX Ink
+  - Getting Started:
+    - [Adding MX Ink Support to a Unity App](https://logitech.github.io/mxink/UnityIntegration.html)
+    - [MX Ink Unity Integration Package](https://logitech.github.io/mxink/UnityIntegration.html#using-the-mx-ink-openxr-interaction-profile-in-a-unity-application)
+    - MX Ink SDK [website](https://logitech.github.io/mxink/)
+- Logitech Muse
+  - When:
+    - Build a spatial app for Apple Vision Pro
+  - Supported Devices:
+    - Logitech Muse
+  - Getting Started:
+    - [Explore spatial accessory input on visionOS](https://developer.apple.com/videos/play/wwdc2025/289/)
+    - [Logitech Muse: tracking, input buttons and haptics in RealityKit](https://gist.github.com/Matt54/4b22cf092abb2478894c1e68f948dd15)
 
 ## Gaming
 
