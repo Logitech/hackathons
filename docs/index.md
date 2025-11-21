@@ -51,10 +51,13 @@
 
 ## Other resources
 
-- Input event capture docs (Win [here](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowshookexa?redirectedfrom=MSDN) and [there](https://learn.microsoft.com/en-us/windows/win32/inputdev/raw-input?redirectedfrom=MSDN), [OSX](https://developer.apple.com/documentation/coregraphics/quartz-event-services), [Linux](https://www.freedesktop.org/wiki/Software/libevdev/))
-- Input event injections docs (Win [here](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-keybd_event?redirectedfrom=MSDN) and [there](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput?redirectedfrom=MSDN), OSX [here](https://developer.apple.com/documentation/coregraphics/cgevent/init(keyboardeventsource:virtualkey:keydown:)) and [there](https://developer.apple.com/documentation/coregraphics/cgevent/post(tap:)), [Linux](https://pypi.org/project/python-uinput/))
-- Input event capture example ([Win / C\#](./res/InputLogger.zip))
-- **MX Keypad** WebHID library ([source](https://github.com/Julusian/node-logitech-mx-creative-console), [demo](https://julusian.github.io/node-logitech-mx-creative-console/))
+- **MX Keypad** [WebHID library](https://github.com/mario-gutierrez/mx-creative-console-webhid)
+
+- Low-level input events handling:
+  - Input event capture docs (Win [here](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowshookexa?redirectedfrom=MSDN) and [there](https://learn.microsoft.com/en-us/windows/win32/inputdev/raw-input?redirectedfrom=MSDN), [OSX](https://developer.apple.com/documentation/coregraphics/quartz-event-services), [Linux](https://www.freedesktop.org/wiki/Software/libevdev/))
+  - Input event injections docs (Win [here](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-keybd_event?redirectedfrom=MSDN) and [there](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput?redirectedfrom=MSDN), OSX [here](https://developer.apple.com/documentation/coregraphics/cgevent/init(keyboardeventsource:virtualkey:keydown:)) and [there](https://developer.apple.com/documentation/coregraphics/cgevent/post(tap:)), [Linux](https://pypi.org/project/python-uinput/))
+  - Input event capture example ([Win / C\#](./res/InputLogger.zip))
+
 
 ## Support & Community
 
