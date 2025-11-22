@@ -52,6 +52,7 @@
 ## Other resources
 
 - **MX Keypad** [WebHID library](https://github.com/mario-gutierrez/mx-creative-console-webhid)
+- **MX Master 4** Haptic Effects [WebHID library](https://github.com/mario-gutierrez/mx-master-4-webhid)
 
 - Low-level input events handling:
   - Input event capture docs (Win [here](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowshookexa?redirectedfrom=MSDN) and [there](https://learn.microsoft.com/en-us/windows/win32/inputdev/raw-input?redirectedfrom=MSDN), [OSX](https://developer.apple.com/documentation/coregraphics/quartz-event-services), [Linux](https://www.freedesktop.org/wiki/Software/libevdev/))
