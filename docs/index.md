@@ -18,6 +18,16 @@
     - [Haptics functionality](https://logitech.github.io/actions-sdk-docs/csharp/Haptics-Overview/)
 - Lights
   - [LITRA Light command line tool (js)](https://github.com/timrogers/litra)
+- LogiInsight Webcam PC Python SDK
+  - When:
+    - Build a PC app that uses the webcam's RGB and near-infrared video, microphone, and on-device face detection/mesh
+  - Supported Devices:
+    - LogiInsight hackathon webcam
+  - Getting started:
+    - [Quick start](./logiinsight/)
+  - Resources links
+    - [API reference](./logiinsight/API.md)
+    - [SDK and examples (zip)](./res/logiinsight_api_sdk_v1.5.0.zip)
 
 ## XR
 
