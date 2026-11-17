@@ -91,5 +91,5 @@ fresh pass.
 
 With the app running and calibrated, connect to `ws://127.0.0.1:8964` and send
 `{"type":"start_stream"}`. See the [sample-code README](../sample-code/README.md) for the protocol,
-a browser demo (`gaze-viewer.html`) and a Python logger (`gaze_logger.py`).
+a browser demo (`gaze-viewer.html`) and a Python logger (`gaze_logger.py`), all source code is MIT licensed.
 
