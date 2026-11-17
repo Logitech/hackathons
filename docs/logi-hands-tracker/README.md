@@ -127,7 +127,7 @@ mid-stream just start receiving from the next frame; there is no history or hand
 
 > **Only thumb and index tips are published.** The other fingers and the full 21-landmark skeleton are
 > *not* part of the protocol (they are used for the preview window only). Design prototypes around
-> thumb/index/pinch interactions, or ask the Hand Tracker maintainers to extend the message.
+> thumb/index/pinch interactions.
 
 ### Coordinate space: `normalized_mirrored`
 
