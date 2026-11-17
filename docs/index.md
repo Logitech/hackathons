@@ -2,6 +2,28 @@
 
 ## PC Peripherals
 
+- LogiInsight Webcam PC Python SDK
+  - When:
+    - Build a PC app that uses the webcam's RGB and near-infrared video, microphone, and on-device face detection/mesh
+  - Supported Devices:
+    - LogiInsight hackathon webcam
+  - Getting started:
+    - [Quick start](./logiinsight/)
+  - Resources links
+    - [API reference](./logiinsight/API.md)
+    - [SDK and examples (zip)](./res/logiinsight_api_sdk_v1.5.0.zip)
+
+- Logi Gaze Tracker
+  - When:
+    - Build a Windows or Mac app that leverages gaze tracking to create innovative interactions and accessibility interfaces
+  - Supported Devices:
+    - Any Logitech webcam
+  - Getting started:
+    - [Quick start](./logi-gaze-tracker/setup/README.md)
+  - Resources links
+    - [Sample code and developers guide](./logi-gaze-tracker/sample-code/README.md)
+    - [Gaze Tracker app for Windows, Mac Apple Silicon/Intel](https://github.com/Logitech/hackathons/releases/tag/logi-gaze-tracker)
+
 - Actions SDK
   - When:
     - Build a Plugin to connect your app/service to our devices
@@ -16,18 +38,13 @@
     - [Demo Plugin Template](https://github.com/Logitech/actions-sdk)
     - [SDK documentation for Agents](./res/LogiActionSDK_agent_doc.zip)
     - [Haptics functionality](https://logitech.github.io/actions-sdk-docs/csharp/Haptics-Overview/)
+
 - Lights
   - [LITRA Light command line tool (js)](https://github.com/timrogers/litra)
-- LogiInsight Webcam PC Python SDK
-  - When:
-    - Build a PC app that uses the webcam's RGB and near-infrared video, microphone, and on-device face detection/mesh
-  - Supported Devices:
-    - LogiInsight hackathon webcam
-  - Getting started:
-    - [Quick start](./logiinsight/)
-  - Resources links
-    - [API reference](./logiinsight/API.md)
-    - [SDK and examples (zip)](./res/logiinsight_api_sdk_v1.5.0.zip)
+
+- WebHID resources
+  - **MX Creative Console: Keypad + Dial** [WebHID library](https://github.com/mario-gutierrez/mx-creative-console-webhid)
+  - **MX Master 4** Haptic Effects [WebHID library](https://github.com/mario-gutierrez/mx-master-4-webhid)
 
 ## XR
 
@@ -60,9 +77,6 @@
 - [Steering Wheel SDK](https://www.logitechg.com/sdk/LogitechSteeringWheelSDK_8.75.30.zip)
 
 ## Other resources
-
-- **MX Keypad** [WebHID library](https://github.com/mario-gutierrez/mx-creative-console-webhid)
-- **MX Master 4** Haptic Effects [WebHID library](https://github.com/mario-gutierrez/mx-master-4-webhid)
 
 - Low-level input events handling:
   - Input event capture docs (Win [here](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowshookexa?redirectedfrom=MSDN) and [there](https://learn.microsoft.com/en-us/windows/win32/inputdev/raw-input?redirectedfrom=MSDN), [OSX](https://developer.apple.com/documentation/coregraphics/quartz-event-services), [Linux](https://www.freedesktop.org/wiki/Software/libevdev/))
