@@ -13,7 +13,7 @@ are looking on the screen and streams the gaze point (px and mm) as JSON over a 
 
 | Platform | Installer |
 | --- | --- |
-| Windows | [Gaze.Tracker.Setup.1.0.0.exe](https://github.com/Logitech/hackathons/releases/donwload/logi-gaze-tracker/Gaze.Tracker.Setup.1.0.0.exe) |
+| Windows | [Gaze.Tracker.Setup.1.0.0.exe](https://github.com/Logitech/hackathons/releases/download/logi-gaze-tracker/Gaze.Tracker.Setup.1.0.0.exe) |
 | macOS Intel | [Gaze.Tracker-1.0.0.dmg](https://github.com/Logitech/hackathons/releases/download/logi-gaze-tracker/Gaze.Tracker-1.0.0.dmg) |
 | macOS Apple Silicon (M1+) | [Gaze.Tracker-1.0.0-arm64.dmg](https://github.com/Logitech/hackathons/releases/download/logi-gaze-tracker/Gaze.Tracker-1.0.0-arm64.dmg) |
 
