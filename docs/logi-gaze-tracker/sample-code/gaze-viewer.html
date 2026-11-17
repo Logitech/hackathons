@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<!--
+  gaze-viewer.html — single-file, zero-dependency gaze demo.
+  Connects to the Gaze Tracker websocket, draws the gaze point full-screen and logs
+  the coordinates (px and mm from the top-left corner of the screen) at the top-left.
+
+  Usage: open this file in a browser (double-click or file://), press F or click "Fullscreen".
+  Query parameters (all optional):
+    ?ws=ws://127.0.0.1:8964   websocket URL
+    &w_mm=344&h_mm=222        PHYSICAL screen size in mm (the protocol does not report it!)
+    &interval=33              stream interval in ms (16..1000)
+  w_mm/h_mm are remembered in localStorage; or use the "Set screen size" button.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gaze viewer</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #111; color: #fff;
+               font-family: ui-monospace, Menlo, Consolas, monospace; cursor: none; }
+  #log { position: fixed; top: 0; left: 0; z-index: 2; padding: 16px 20px; font-size: 32px;
+         line-height: 1.35; white-space: pre; background: rgba(0,0,0,.65); border-bottom-right-radius: 12px; }
+  #log .dim { color: #9aa; font-size: 22px; }
+  #dot { position: fixed; z-index: 1; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%;
+         background: rgba(255,60,60,.55); border: 4px solid #ff3c3c; box-shadow: 0 0 24px #ff3c3c;
+         pointer-events: none; display: none; }
+  #dot.edge { border-color: #ffd23c; box-shadow: 0 0 24px #ffd23c; }
+  #bar { position: fixed; bottom: 12px; right: 12px; z-index: 2; cursor: default; }
+  button { font: 16px sans-serif; padding: 8px 12px; margin-left: 8px; }
+</style>
+</head>
+<body>
+<div id="log"></div>
+<div id="dot"></div>
+<div id="bar">
+  <button id="fs">Fullscreen (F)</button>
+  <button id="mm">Set screen size (mm)</button>
+</div>
+<script>
+const params = new URLSearchParams(location.search);
+const WS_URL = params.get('ws') || 'ws://127.0.0.1:8964';
+const INTERVAL_MS = Number(params.get('interval')) || 33;
+// Physical screen size cannot be derived from the protocol; default is a 16" MacBook Pro panel.
+let screenMm = {
+  w: Number(params.get('w_mm')) || Number(localStorage.gazeScreenWmm) || 344,
+  h: Number(params.get('h_mm')) || Number(localStorage.gazeScreenHmm) || 222,
+};
+const logEl = document.getElementById('log');
+const dotEl = document.getElementById('dot');
+let status = 'connecting...';
+let last = null;
+
+function render() {
+  const pad = (v, n) => String(v).padStart(n, ' ');
+  let body = 'no gaze data';
+  if (last?.gaze) {
+    const { x_px, y_px, source } = last.gaze;
+    const sw = last.screen.width_px, sh = last.screen.height_px;
+    const xmm = x_px / sw * screenMm.w, ymm = y_px / sh * screenMm.h;
+    body = `px: x=${pad(x_px.toFixed(0), 5)}  y=${pad(y_px.toFixed(0), 5)}\n` +
+           `mm: x=${pad(xmm.toFixed(1), 6)}  y=${pad(ymm.toFixed(1), 6)}\n` +
+           `<span class="dim">screen ${sw}x${sh}px = ${screenMm.w}x${screenMm.h}mm | ${source}</span>`;
+  }
+  logEl.innerHTML = `${body}\n<span class="dim">${status}</span>`;
+}
+
+function placeDot(snapshot) {
+  const g = snapshot?.gaze;
+  if (!g) { dotEl.style.display = 'none'; return; }
+  // Gaze is in screen coordinates; in fullscreen the viewport equals the screen.
+  let x = g.x_px, y = g.y_px;
+  if (!document.fullscreenElement) {
+    x -= window.screenX + (window.outerWidth - window.innerWidth) / 2;
+    y -= window.screenY + (window.outerHeight - window.innerHeight);
+  }
+  const cx = Math.min(Math.max(x, 0), innerWidth), cy = Math.min(Math.max(y, 0), innerHeight);
+  dotEl.classList.toggle('edge', cx !== x || cy !== y); // yellow = gaze is off-screen, pinned to border
+  dotEl.style.left = cx + 'px';
+  dotEl.style.top = cy + 'px';
+  dotEl.style.display = 'block';
+}
+
+function connect() {
+  const ws = new WebSocket(WS_URL);
+  ws.onopen = () => {
+    status = `connected ${WS_URL}`;
+    ws.send(JSON.stringify({ type: 'start_stream', interval_ms: INTERVAL_MS }));
+    render();
+  };
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.type !== 'snapshot') return;
+    last = msg;
+    placeDot(msg);
+    render();
+  };
+  ws.onclose = () => { status = 'disconnected, retrying...'; render(); setTimeout(connect, 1000); };
+  ws.onerror = () => ws.close();
+}
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen();
+}
+document.getElementById('fs').onclick = toggleFullscreen;
+document.getElementById('mm').onclick = () => {
+  const v = prompt('Physical screen size in mm, "width,height"', `${screenMm.w},${screenMm.h}`);
+  const [w, h] = (v || '').split(',').map(Number);
+  if (w > 0 && h > 0) {
+    screenMm = { w, h };
+    localStorage.gazeScreenWmm = w; localStorage.gazeScreenHmm = h;
+    render();
+  }
+};
+addEventListener('keydown', (e) => { if (e.key === 'f' || e.key === 'F') toggleFullscreen(); });
+
+render();
+connect();
+</script>
+</body>
+</html>
