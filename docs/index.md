@@ -28,7 +28,7 @@
   - When:
     - Build a Windows or Mac app that leverages hands tracking to create innovative interactions and accessibility interfaces
   - Supported Devices:
-    - Any Logitech webcam
+    - LogiInsight hackathon webcam (`LVNext CPD Camera`)
   - Getting started:
     - [Quick start](./logi-hands-tracker/README.md)
   - Resources links

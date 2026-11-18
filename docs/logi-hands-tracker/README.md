@@ -1,7 +1,7 @@
 # Logi Hands Tracker – Developer Guide & Samples
 
 Build your own hand-tracking prototypes on top of [**Logitech Hands Tracker**](https://github.com/Logitech/hackathons/releases/tag/hands-tracker).
-The app reads a webcam, runs MediaPipe Hand Landmarker, and **streams hand positions as JSON over a
+The app is designed for the LogiInsight hackathon webcam (`LVNext CPD Camera`), runs MediaPipe Hand Landmarker, and **streams hand positions as JSON over a
 local WebSocket**. Any language that can open a WebSocket (browser JS, Python, Node, Unity, Rust, …)
 can consume it. It can also serve the latest camera frame as a PNG over HTTP.
 
