@@ -49,8 +49,6 @@ with a red outline. It does **not** clamp or alter the gaze coordinates sent ove
 ### Starting calibration
 
 - **Tray menu**: right-click the tray icon → "Start Calibration".
-- **Global shortcut**: `Ctrl+Alt+G` (override with `GAZE_CALIBRATION_SHORTCUT`, Electron accelerator
-  syntax) works system-wide, even while the app has no visible window.
 
 During calibration, `Esc` cancels and a click or Space samples the current point. 
 

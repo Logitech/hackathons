@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hand Tracker – Full-screen Viewer</title>
+<!--
+  Self-contained sample: open this file directly in a browser (double-click) while the Hand Tracker
+  app is running. No server, no dependencies.
+
+  Options (URL query string):
+    ?port=8765          websocket_port from config.json
+    ?host=127.0.0.1     tracker host
+    ?url=ws://h:p       full override
+    ?stretch=1          stretch to the window instead of keeping the camera aspect ratio
+
+  Keys: F = fullscreen, S = toggle stretch, H = hide/show HUD.
+-->
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0d12; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+<script>
+"use strict";
+
+const params = new URLSearchParams(location.search);
+const WS_URL = params.get("url") ||
+  `ws://${params.get("host") || "127.0.0.1"}:${params.get("port") || 8765}`;
+
+let stretch = params.get("stretch") === "1";
+let showHud = true;
+let latest = null;          // last hand_telemetry message
+let lastMessageAt = 0;      // performance.now() of last message
+let connected = false;
+let fps = 0, frames = 0, fpsTimer = performance.now();
+
+// Per-hand colors (handedness label -> color).
+const COLORS = { Left: "#4cc9f0", Right: "#ffb703", Unknown: "#c77dff" };
+const PINCH_DISTANCE = 0.06; // normalized units; below this we flag a "pinch"
+
+const canvas = document.getElementById("view");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(innerWidth * dpr);
+  canvas.height = Math.round(innerHeight * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+addEventListener("resize", resize);
+resize();
+
+// ---- WebSocket with auto-reconnect ---------------------------------------------------------
+function connect() {
+  const ws = new WebSocket(WS_URL);
+  ws.onopen = () => { connected = true; };
+  ws.onmessage = (event) => {
+    let msg;
+    try { msg = JSON.parse(event.data); } catch { return; }
+    if (msg.type !== "hand_telemetry") return;
+    latest = msg;
+    lastMessageAt = performance.now();
+    frames++;
+  };
+  ws.onclose = () => { connected = false; setTimeout(connect, 1500); };
+  ws.onerror = () => ws.close();
+}
+connect();
+
+// ---- Coordinates ---------------------------------------------------------------------------
+// Telemetry space: x in [0,1] left->right of the mirrored view, y in [0,1] with 0 at the BOTTOM.
+// The camera image area is image.width x image.height, so we map into a rectangle with that
+// aspect ratio (letterboxed) unless stretch is on.
+function viewRect() {
+  const W = innerWidth, H = innerHeight;
+  if (stretch || !latest) return { x: 0, y: 0, w: W, h: H };
+  const aspect = latest.image.width / latest.image.height;
+  let w = W, h = W / aspect;
+  if (h > H) { h = H; w = H * aspect; }
+  return { x: (W - w) / 2, y: (H - h) / 2, w, h };
+}
+const toScreen = (p, r) => ({ x: r.x + p.x * r.w, y: r.y + (1 - p.y) * r.h });
+
+// ---- Drawing -------------------------------------------------------------------------------
+function label(text, x, y, color, { size = 16, align = "left", dx = 14, dy = -14 } = {}) {
+  ctx.font = `600 ${size}px system-ui, sans-serif`;
+  ctx.textAlign = align;
+  ctx.textBaseline = "middle";
+  const w = ctx.measureText(text).width;
+  const lx = x + dx;
+  const bx = align === "center" ? lx - w / 2 : lx;
+  ctx.fillStyle = "rgba(11,13,18,0.78)";
+  ctx.fillRect(bx - 6, y + dy - size / 2 - 3, w + 12, size + 6);
+  ctx.fillStyle = color;
+  ctx.fillText(text, lx, y + dy);
+}
+
+function dot(p, color, radius) {
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#fff";
+  ctx.stroke();
+}
+
+function drawHand(hand, r) {
+  const color = COLORS[hand.handedness] || COLORS.Unknown;
+  const thumb = toScreen(hand.thumb_tip, r);
+  const index = toScreen(hand.index_tip, r);
+  const mid = toScreen(hand.index_thumb_midpoint, r);
+  const pinching = hand.index_thumb_distance < PINCH_DISTANCE;
+
+  // thumb <-> index link
+  ctx.lineWidth = pinching ? 6 : 3;
+  ctx.strokeStyle = color;
+  ctx.setLineDash(pinching ? [] : [10, 8]);
+  ctx.beginPath(); ctx.moveTo(thumb.x, thumb.y); ctx.lineTo(index.x, index.y); ctx.stroke();
+  ctx.setLineDash([]);
+
+  dot(thumb, color, 16);
+  dot(index, color, 16);
+  dot(mid, "#fff", pinching ? 14 : 8);
+
+  label(`${hand.handedness} · Thumb`, thumb.x, thumb.y, color, { dx: -14, dy: -26, align: "right" });
+  label(`${hand.handedness} · Index`, index.x, index.y, color, { dx: 14, dy: -26 });
+  label(
+    `${hand.handedness} hand  d=${hand.index_thumb_distance.toFixed(3)}${pinching ? "  PINCH" : ""}`,
+    mid.x, mid.y, "#fff", { size: 18, align: "center", dx: 0, dy: 36 },
+  );
+}
+
+function drawHud(r, stale) {
+  if (!showHud) return;
+  // camera frame outline
+  ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.15)";
+  ctx.strokeRect(r.x + .5, r.y + .5, r.w - 1, r.h - 1);
+
+  const hands = latest && !stale ? latest.hands.length : 0;
+  const status = !connected ? `Connecting to ${WS_URL} …` :
+    stale ? "Connected – waiting for telemetry" : `${hands} hand${hands === 1 ? "" : "s"} detected`;
+  ctx.font = "14px ui-monospace, monospace";
+  ctx.textAlign = "left"; ctx.textBaseline = "top";
+  ctx.fillStyle = connected ? "#8bd17c" : "#ff6b6b";
+  ctx.fillText(`● ${status}`, 16, 16);
+  ctx.fillStyle = "rgba(255,255,255,0.6)";
+  ctx.fillText(`${fps.toFixed(0)} msg/s   ${WS_URL}   [F] fullscreen  [S] stretch  [H] hud`, 16, 38);
+}
+
+function frame(now) {
+  if (now - fpsTimer >= 1000) { fps = frames * 1000 / (now - fpsTimer); frames = 0; fpsTimer = now; }
+  const stale = !latest || now - lastMessageAt > 1500;
+
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+  const r = viewRect();
+  if (showHud) { ctx.fillStyle = "#11141b"; ctx.fillRect(r.x, r.y, r.w, r.h); }
+  if (latest && !stale) for (const hand of latest.hands) drawHand(hand, r);
+  drawHud(r, stale);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ---- Controls ------------------------------------------------------------------------------
+addEventListener("keydown", (e) => {
+  const k = e.key.toLowerCase();
+  if (k === "f") document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  else if (k === "s") stretch = !stretch;
+  else if (k === "h") showHud = !showHud;
+});
+addEventListener("dblclick", () => {
+  document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+});
+</script>
+</body>
+</html>

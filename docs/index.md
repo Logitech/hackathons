@@ -24,6 +24,17 @@
     - [Sample code and developers guide](./logi-gaze-tracker/sample-code/README.md)
     - [Gaze Tracker app for Windows, Mac Apple Silicon/Intel](https://github.com/Logitech/hackathons/releases/tag/logi-gaze-tracker)
 
+- Logi Hands Tracker
+  - When:
+    - Build a Windows or Mac app that leverages hands tracking to create innovative interactions and accessibility interfaces
+  - Supported Devices:
+    - Any Logitech webcam
+  - Getting started:
+    - [Quick start](./logi-hands-tracker/README.md)
+  - Resources links
+    - [Sample code and developers guide](./logi-hands-tracker/)
+    - [Hands Tracker app for Windows, Mac Apple Silicon/Intel](https://github.com/Logitech/hackathons/releases/tag/hands-tracker)
+
 - Actions SDK
   - When:
     - Build a Plugin to connect your app/service to our devices
@@ -39,12 +50,12 @@
     - [SDK documentation for Agents](./res/LogiActionSDK_agent_doc.zip)
     - [Haptics functionality](https://logitech.github.io/actions-sdk-docs/csharp/Haptics-Overview/)
 
-- Lights
-  - [LITRA Light command line tool (js)](https://github.com/timrogers/litra)
-
 - WebHID resources
   - **MX Creative Console: Keypad + Dial** [WebHID library](https://github.com/mario-gutierrez/mx-creative-console-webhid)
   - **MX Master 4** Haptic Effects [WebHID library](https://github.com/mario-gutierrez/mx-master-4-webhid)
+
+- Lights
+  - [LITRA Light command line tool (js)](https://github.com/timrogers/litra)
 
 ## XR
 
