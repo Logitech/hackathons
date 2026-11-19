@@ -52,6 +52,7 @@
 
 - WebHID resources
   - **MX Creative Console: Keypad + Dial** [WebHID library](https://github.com/mario-gutierrez/mx-creative-console-webhid)
+  - **MX Keypad Script Lab**: web-based script engine for the Logitech MX Keypad. [git](https://github.com/mario-gutierrez/mx-cc-script)
   - **MX Master 4** Haptic Effects [WebHID library](https://github.com/mario-gutierrez/mx-master-4-webhid)
 
 - Lights
