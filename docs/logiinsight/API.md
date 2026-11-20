@@ -270,7 +270,7 @@ Module helpers: `firmware_matches_sdk(text)` (`True`/`False`/`None` = unknown) c
 firmware release with the SDK's major.minor version. `AiStalenessMonitor(max_age_s=2.0)`
 has one method, `update(data)`: call it with every result of `get_latest_ai_data()`; it returns
 a warning text **once** when `timestamp_ms` stopped changing for `max_age_s` seconds (the RGB
-stream is not MJPG, nobody reads it, or the AI is off), otherwise `None`. The RGB examples use both.
+stream is not MJPG, or nobody reads it), otherwise `None`. The RGB examples use both.
 
 Exceptions: `LogiWebcamConnectionError`, `LogiWebcamDataError`, and `ValueError` for a
 missing password.
@@ -369,8 +369,9 @@ defaults shown in its signature (so it turns `enable_face_detection` **on** unle
 pass `False`).
 
 **To switch the built-in AI off** write `enable_face_detection=False` and
-`enable_face_mesh=False`: the camera then does no AI work. Opening the RGB camera as YUY2 or
-NV12 instead of MJPG has the same effect (the AI only runs on MJPG).
+`enable_face_mesh=False`: the camera then runs no AI model; the JSON keeps updating but
+`faces` stays empty. Opening the RGB camera as YUY2 or NV12 instead of MJPG also stops the
+AI, but then the JSON stops updating altogether (the AI only runs on MJPG).
 
 ---
 

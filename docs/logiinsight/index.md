@@ -272,7 +272,8 @@ mode off again when they finish.
 
 ### If you do not want the camera's built-in AI
 
-Switch it off (the camera then does no AI work; the JSON stops updating):
+Switch it off (the camera then runs no AI model; the JSON keeps updating, but its `faces`
+list stays empty):
 
 ```python
 from logiwebcam import LogiWebcamClient
@@ -298,7 +299,8 @@ Run **`python check_connection.py`** first; it finds most problems below.
 | `SSH user name and password … required` | Set `LOGIWEBCAM_USER` and `LOGIWEBCAM_PASSWORD` (section 3, step 5) in the same terminal. |
 | `Authentication failed` | Compare with the card in your kit; copy the values exactly. In Windows `cmd` no quotes after `set`; in macOS/Linux use single quotes. |
 | `Failed to connect to 192.168.1.10` | The adapter has no `192.168.1.x` address yet (section 3), Wi-Fi uses the same subnet, or macOS needs the Local Network permission (see above). |
-| AI JSON never changes / `timestamp_ms` frozen | The RGB stream is not MJPG, no program is reading the RGB stream, or the AI was switched off with `set_ai_config()`. |
+| AI JSON never changes / `timestamp_ms` frozen | The RGB stream is not MJPG, or no program is reading the RGB stream. |
+| `faces` is always empty | Face detection is switched off (`set_ai_config(enable_face_detection=False)`): switch it on again, or run `rgb_ai_capture.py` / `rgb_ai_live.py`, which do. |
 | `Cannot open … camera` on Linux | `ls /dev/video*`; add your user to the `video` group, log out and in. |
 | macOS: black window / no frames | Allow Camera access for the terminal app, then restart it. |
 | `PortAudio library not found` (Linux) | `sudo apt install libportaudio2` |
