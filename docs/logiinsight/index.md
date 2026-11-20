@@ -19,7 +19,7 @@ Python SDK and examples for the LogiInsight hackathon webcam. From a normal PC y
 
 ## Download
 
-* [logiinsight_api_sdk_v1.5.1.zip](../res/logiinsight_api_sdk_v1.5.1.zip) - SDK, examples and README (MIT licensed)
+* [logiinsight_api_sdk_v1.5.1.zip](https://github.com/Logitech/hackathons/releases/download/logiinsight-sdk-v1.5.1/logiinsight_api_sdk_v1.5.1.zip) - SDK, examples and README (MIT licensed)
 
 The full reference is **[API reference](./API.md)**. Using an AI assistant? See
 [section 7](#7-using-an-ai-assistant-with-these-docs).

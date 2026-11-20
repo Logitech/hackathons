@@ -9,7 +9,7 @@
 - [Quick start and step-by-step connection guide](https://logitech.github.io/hackathons/logiinsight/)
 - [API reference](https://raw.githubusercontent.com/Logitech/hackathons/master/docs/logiinsight/API.md)
 - [Quick start as raw text](https://raw.githubusercontent.com/Logitech/hackathons/master/docs/logiinsight/index.md)
-- [SDK download](https://logitech.github.io/hackathons/res/logiinsight_api_sdk_v1.5.1.zip)
+- [SDK download](https://github.com/Logitech/hackathons/releases/download/logiinsight-sdk-v1.5.1/logiinsight_api_sdk_v1.5.1.zip)
 
 ## Other tools
 

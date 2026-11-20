@@ -6,7 +6,7 @@
 > it). With another webcam (MX Brio, your own, a laptop's built-in camera) only the plain
 > video parts apply.
 
-Quick start and installation: the [quick start](./) page, or `README.md` in the [SDK zip](../res/logiinsight_api_sdk_v1.5.1.zip).
+Quick start and installation: the [quick start](./) page, or `README.md` in the [SDK zip](https://github.com/Logitech/hackathons/releases/download/logiinsight-sdk-v1.5.1/logiinsight_api_sdk_v1.5.1.zip).
 
 Contents
 
