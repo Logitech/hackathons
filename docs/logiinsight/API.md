@@ -418,7 +418,7 @@ and the snapshot of the same instant can look different.
 | Script | What it does | Notes |
 |---|---|---|
 | `rgb_ai_capture.py` | Captures N RGB frames, fetches the JSON per frame (or snapshot pairs with `--device-snapshot`), draws face box and mesh, saves `frame_NNNN.png` + `.json` | `--frames`, `--interval`, `--width`, `--height`, `--face-mesh`, `--device-snapshot`, `--ip`, `--user`, `--password`, `--device` |
-| `rgb_ai_live.py` | The same overlays live in a window | lists the cameras and asks which to use if `--device` is missing |
+| `rgb_ai_live.py` | The same overlays live in a window | lists the cameras and asks which to use if `--device` is missing; `--no-overlay` shows the raw picture (only an `AI faces: N` counter) |
 | `check_connection.py` | Checks the SSH/SFTP link step by step (address, Wi-Fi clash, port 22, login, AI results, firmware) and prints the fix for each failure | `--ip`, `--user`, `--password`; exit code `1` if a step failed |
 | `example_IR.py` | Near-infrared live view with five processing modes | no SSH; `--device`, `--width/--height`, `--mode`, `--threshold`, `--flicker-filter`, `--frames`, `--no-display` |
 | `example_audio.py` | Records the camera microphone (10 s by default) and saves a multi-channel `.wav` plus a per-channel power-spectrum `.png`; prints RMS, peak and strongest frequency per channel (§11) | `--duration`, `--device`, `--samplerate`, `--channels`, `--output-dir`, `--list`; no SSH |

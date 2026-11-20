@@ -212,7 +212,7 @@ Also try another USB 3 cable or port.
 | Script | Purpose | Needs SSH |
 |---|---|---|
 | `rgb_ai_capture.py` | RGB: capture frames + AI JSON, save annotated PNG/JSON pairs (`--device-snapshot` for exactly paired frames) | yes |
-| `rgb_ai_live.py` | RGB: live window with face box / mesh overlays | yes |
+| `rgb_ai_live.py` | RGB: live window with face box / mesh overlays (`--no-overlay` shows the raw picture) | yes |
 | `example_IR.py` | Near-infrared live view: `raw`, contrast `stretch`, `clahe`, `threshold`, `otsu` (keys: `m` mode, `+`/`-` threshold, `s` save, `q` quit) | no |
 | `example_audio.py` | Microphone: record 10 s (`--duration`), save a multi-channel `.wav` and a per-channel power-spectrum `.png`, print RMS / peak / strongest frequency | no |
 | `check_connection.py` | Step-by-step check of the SSH/SFTP link, with fixes | yes |
