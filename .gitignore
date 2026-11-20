@@ -36,3 +36,6 @@ build/
 
 # Nodejs
 node_modules/
+
+# LogiInsight SDK zips are published as GitHub release assets, not tracked
+docs/res/logiinsight_api_sdk_*.zip

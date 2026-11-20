@@ -1,0 +1,28 @@
+# LogiInsight and Logi hackathon resources
+
+> Documentation for the Logitech hackathon kits: the LogiInsight webcam SDK, the Gaze Tracker
+> and the Hands Tracker. The AI-enabled LogiInsight examples work only with the LogiInsight
+> webcam from the kit (the AI runs inside the camera), not with other webcams.
+
+## LogiInsight webcam (Python SDK, Windows / macOS / Linux)
+
+- [Quick start and step-by-step connection guide](https://logitech.github.io/hackathons/logiinsight/)
+- [API reference](https://raw.githubusercontent.com/Logitech/hackathons/master/docs/logiinsight/API.md)
+- [Quick start as raw text](https://raw.githubusercontent.com/Logitech/hackathons/master/docs/logiinsight/index.md)
+- [SDK download](https://github.com/Logitech/hackathons/releases/download/logiinsight-sdk-v1.5.2/logiinsight_api_sdk_v1.5.2.zip)
+
+## Other tools
+
+- [All resources](https://logitech.github.io/hackathons/)
+- [Gaze Tracker quick start](https://raw.githubusercontent.com/Logitech/hackathons/master/docs/logi-gaze-tracker/setup/README.md)
+- [Hands Tracker](https://raw.githubusercontent.com/Logitech/hackathons/master/docs/logi-hands-tracker/README.md)
+
+## Rules for generated code
+
+- The camera's SSH user name and password are printed on the card in the kit. Read them from the
+  environment variables LOGIWEBCAM_USER and LOGIWEBCAM_PASSWORD; never put them in code or in a chat.
+- AI results are a JSON file read over SSH/SFTP (camera address 192.168.1.10); video comes from
+  OpenCV. Coordinates in the JSON are pixels of the video size that was opened.
+- The AI results only update while the RGB camera is open and being read (MJPG, YUY2 or NV12 on
+  firmware 1.5.2 or newer; older firmware: MJPG only). To use the IR stream at full rate next to it,
+  open the RGB camera as NV12 or YUY2.
