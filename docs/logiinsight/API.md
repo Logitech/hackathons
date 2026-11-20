@@ -1,12 +1,12 @@
 # LogiInsight Webcam — PC SDK API Reference
 
-**SDK version 1.5.1** · for the LogiInsight hackathon webcam
+**SDK version 1.5.2** · for the LogiInsight hackathon webcam
 
 > The AI features described here exist **only on the LogiInsight webcam** (the AI runs inside
 > it). With another webcam (MX Brio, your own, a laptop's built-in camera) only the plain
 > video parts apply.
 
-Quick start and installation: the [quick start](./) page, or `README.md` in the [SDK zip](https://github.com/Logitech/hackathons/releases/download/logiinsight-sdk-v1.5.1/logiinsight_api_sdk_v1.5.1.zip).
+Quick start and installation: the [quick start](./) page, or `README.md` in the [SDK zip](https://github.com/Logitech/hackathons/releases/download/logiinsight-sdk-v1.5.2/logiinsight_api_sdk_v1.5.2.zip).
 
 Contents
 
@@ -45,8 +45,9 @@ needs a manual address on your PC (`192.168.1.20/24`, no gateway; see the README
 ```
 
 The camera runs face detection and an optional 478-point face mesh on the device. It
-**only runs while the RGB camera is open as an MJPG stream**; with no reader (or a
-non-MJPG stream) the result file simply stops changing.
+**runs while the RGB camera is open, as an MJPG, YUY2 or NV12 stream** (firmware 1.5.2 or
+newer; firmware 1.5.1 runs it on MJPG only); with no reader the result file simply stops
+changing.
 
 ### Files visible over SFTP
 
@@ -98,7 +99,8 @@ Rates depend on the USB link speed; every mode also offers lower rates down to 5
 
 These are upper bounds. Actual rates depend on exposure (low light lowers the frame
 rate), your USB controller and the OS backend. Use a USB 3 port and cable for 1080p and
-above.
+above; raw NV12 and YUY2 at 1080p need USB 3 for a usable frame rate (USB 2 offers 15 fps
+at most).
 
 ### Opening the RGB stream correctly
 
@@ -112,12 +114,18 @@ cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))   # 2. then the fo
 ```
 
 * **Order: size, then fps, then FOURCC.** On DirectShow, setting the FOURCC first, or
-  requesting an fps after it, silently gives YUY2 on the RGB camera. The AI only runs on
-  MJPG, so always check the negotiated format.
-* **The AI needs MJPG.** On YUY2 or NV12 the JSON stops updating, with no error.
-* **Windows MSMF and macOS AVFoundation** frequently ignore the FOURCC request. Read it
-  back (`cap.get(cv2.CAP_PROP_FOURCC)`); `rgb_ai_capture.py` does and warns. On Windows the
-  DirectShow backend (`CAP_DSHOW`) honours it more reliably.
+  requesting an fps after it, silently gives YUY2 on the RGB camera. Always check the
+  negotiated format: it decides the frame rate and whether the IR stream can run next to it
+  (§3).
+* **The AI runs on every RGB format.** MJPG, YUY2 and NV12 all produce AI results (Windows
+  and macOS, firmware 1.5.2 or newer). Firmware 1.5.1 runs the AI on MJPG only: there the
+  JSON stops updating on YUY2 or NV12, with no error. Measured at 1080p with RGB alone:
+  about 30 fps video and about 27 AI results per second.
+* **Windows MSMF and macOS AVFoundation** may ignore the FOURCC request, and macOS picks the
+  format itself. Read it back (`cap.get(cv2.CAP_PROP_FOURCC)`); `rgb_ai_capture.py` does and
+  prints the format it asked for and the one the OS delivered. The AI works with whichever of
+  the three you get. On Windows the DirectShow backend (`CAP_DSHOW`) honours the request more
+  reliably.
 * Keep a reader running (`cap.read()` in a loop). The AI runs only while the RGB stream
   is open.
 
@@ -176,14 +184,19 @@ are plain functions on `uint8` arrays that you can import.
   bright, then dark, then settled). Skip them before you process frames.
 * If the IR picture flickers, use `example_IR.py --flicker-filter` (per-pixel maximum of
   two consecutive frames).
-* **RGB and IR at the same time.** You can open both streams together and close them in
-  any order. The frame rate is the limit:
-  * both streams MJPG (the only way to keep the AI running): each stream typically runs at
-    about 15 fps, or the IR stream drops to about 1 fps while RGB keeps about 29 fps;
-  * RGB as NV12 or YUY2 and IR as MJPG: both streams run at 30 fps, but the AI is off,
-    because it only runs on an MJPG RGB stream.
+* **RGB and IR at the same time.** You can open both streams together. The frame rate is
+  the limit, and it depends on the RGB format:
+  * RGB as NV12 or YUY2 and IR as MJPG: RGB about 30 fps, IR about 29 fps, and the AI
+    delivers about 13–17 results per second (lower than the ~27 per second with RGB alone).
+    A 5-minute run, 15 IR open/close cycles and 18 format/size switches were stable;
+  * RGB as MJPG and IR: RGB still about 30 fps, but the IR stream drops to about 1 fps (the
+    two share the camera's JPEG encoder). **Use NV12 or YUY2 for RGB when you need IR.**
 
-  Open the RGB stream first.
+  Open the RGB stream first. Depending on your system (operating system, USB controller,
+  camera software) the order in which you open the RGB and the near-infrared (CPD) camera
+  can matter. In our Windows tests we opened RGB first and then IR and could close them in
+  either order without problems; if a stream does not start or the frame rate drops, close
+  both and open them in the other order.
 
 ---
 
@@ -260,7 +273,7 @@ write command was issued, not that the camera has applied it; check the JSON.
 | `get_yuv_status()` | one-line status string of the last snapshot write, or `None` |
 | `get_device_snapshot(retries=3, verbose=False)` | `(bgr_ndarray, data)`; `(None, None)` if no JSON; `(None, data)` if no YUV is being written |
 | `diagnose()` | prints and returns a dict of INI/JSON/YUV probes. Run this first when results stay `None` |
-| `get_firmware_version()` | first line of the camera's version text (`… hackathon-1.5.1 <variant> <commit>`), or `None` |
+| `get_firmware_version()` | first line of the camera's version text (`… hackathon-1.5.2 <variant> <commit>`), or `None` |
 
 `get_device_snapshot()` fetches the JSON and the YUV file, checks that the timestamp in
 the JSON equals the 8-byte header of the YUV, retries on mismatch and converts NV12 → BGR
@@ -269,8 +282,9 @@ with OpenCV.
 Module helpers: `firmware_matches_sdk(text)` (`True`/`False`/`None` = unknown) compares the
 firmware release with the SDK's major.minor version. `AiStalenessMonitor(max_age_s=2.0)`
 has one method, `update(data)`: call it with every result of `get_latest_ai_data()`; it returns
-a warning text **once** when `timestamp_ms` stopped changing for `max_age_s` seconds (the RGB
-stream is not MJPG, or nobody reads it), otherwise `None`. The RGB examples use both.
+a warning text **once** when `timestamp_ms` stopped changing for `max_age_s` seconds (nobody
+reads the RGB stream, or on firmware 1.5.1 the stream is not MJPG), otherwise `None`. The RGB
+examples use both.
 
 Exceptions: `LogiWebcamConnectionError`, `LogiWebcamDataError`, and `ValueError` for a
 missing password.
@@ -316,8 +330,8 @@ finally:
 
 File: `/files/logi_conf/logiwebcam_ai_output.json`, written atomically (temp file then
 rename) for every processed frame. The AI result rate is lower than the video frame rate,
-so consecutive video frames can share a result (at 30 fps video, expect about 27–30
-results per second).
+so consecutive video frames can share a result (with RGB alone at 1080p expect about 27
+results per second; with the IR stream open next to it about 13–17).
 
 ```json
 {
@@ -338,7 +352,7 @@ results per second).
 | Field | Meaning |
 |---|---|
 | `api_version` | JSON schema version, the integer `2`; always present, also when `plugin_loaded` is `false` |
-| `plugin_loaded` | `true` while the AI runs. `false` means empty `faces`: treat it as "no AI results", not an error (stream not open, wrong format, or the AI restarted) |
+| `plugin_loaded` | `true` while the AI runs. `false` means empty `faces`: treat it as "no AI results", not an error (stream not open, the AI restarted, or firmware 1.5.1 with a stream that is not MJPG) |
 | `timestamp_ms` | One value per processed frame, taken when the frame reaches the AI, **before** inference. It is the camera's **wall clock** in milliseconds (the camera may have no real-time clock, so it can start at an arbitrary date and jump), stored in a **32-bit** value, so it wraps. Use it only to compare with other values from the same camera, for example to see that results advance or to pair the YUV file, never as absolute time |
 | `face_timestamp_ms`, `faces[i].capture_timestamp_ms` | Always equal to `timestamp_ms` |
 | `faces[i].bbox` | `[x, y, width, height]`, **stream pixels** (§4) |
@@ -370,8 +384,9 @@ pass `False`).
 
 **To switch the built-in AI off** write `enable_face_detection=False` and
 `enable_face_mesh=False`: the camera then runs no AI model; the JSON keeps updating but
-`faces` stays empty. Opening the RGB camera as YUY2 or NV12 instead of MJPG also stops the
-AI, but then the JSON stops updating altogether (the AI only runs on MJPG).
+`faces` stays empty. This is the only way to switch the AI off: opening the RGB camera as
+YUY2 or NV12 does **not** stop it (the AI runs on MJPG, YUY2 and NV12; only firmware 1.5.1
+is limited to MJPG).
 
 ---
 
@@ -410,6 +425,8 @@ and the snapshot of the same instant can look different.
   or `capture_latency_ms`).
 * A snapshot takes about 2 s to fetch over SFTP at 1920×1080, so plan for roughly one
   snapshot every 2 s.
+* While the snapshot mode is on, the camera's log (`/files/LogiApp.log`) grows very fast:
+  switch it off after use.
 
 ---
 
@@ -417,8 +434,8 @@ and the snapshot of the same instant can look different.
 
 | Script | What it does | Notes |
 |---|---|---|
-| `rgb_ai_capture.py` | Captures N RGB frames, fetches the JSON per frame (or snapshot pairs with `--device-snapshot`), draws face box and mesh, saves `frame_NNNN.png` + `.json` | `--frames`, `--interval`, `--width`, `--height`, `--face-mesh`, `--device-snapshot`, `--ip`, `--user`, `--password`, `--device` |
-| `rgb_ai_live.py` | The same overlays live in a window | lists the cameras and asks which to use if `--device` is missing; `--no-overlay` shows the raw picture (only an `AI faces: N` counter) |
+| `rgb_ai_capture.py` | Captures N RGB frames, fetches the JSON per frame (or snapshot pairs with `--device-snapshot`), draws face box and mesh, saves `frame_NNNN.png` + `.json` | `--frames`, `--interval`, `--width`, `--height`, `--format` (MJPG, YUY2 or NV12; default MJPG), `--face-mesh`, `--device-snapshot`, `--ip`, `--user`, `--password`, `--device` |
+| `rgb_ai_live.py` | The same overlays live in a window | lists the cameras and asks which to use if `--device` is missing; `--format` (MJPG, YUY2 or NV12; default MJPG); `--no-overlay` shows the raw picture (only an `AI faces: N` counter) |
 | `check_connection.py` | Checks the SSH/SFTP link step by step (address, Wi-Fi clash, port 22, login, AI results, firmware) and prints the fix for each failure | `--ip`, `--user`, `--password`; exit code `1` if a step failed |
 | `example_IR.py` | Near-infrared live view with five processing modes | no SSH; `--device`, `--width/--height`, `--mode`, `--threshold`, `--flicker-filter`, `--frames`, `--no-display` |
 | `example_audio.py` | Records the camera microphone (10 s by default) and saves a multi-channel `.wav` plus a per-channel power-spectrum `.png`; prints RMS, peak and strongest frequency per channel (§11) | `--duration`, `--device`, `--samplerate`, `--channels`, `--output-dir`, `--list`; no SSH |
@@ -432,14 +449,19 @@ Ctrl+C (`rgb_ai_capture.py`, `rgb_ai_live.py`, `example_audio.py`).
 
 ### Limits to keep in mind
 
-* AI results only while the RGB stream is open **as MJPG**.
-* Opening the IR stream next to an MJPG RGB stream roughly halves the frame rate of both,
-  or starves the IR stream (§3). For 30 fps on both streams use RGB in NV12 or YUY2; the
-  AI is then off.
+* AI results only while a program reads the RGB stream (MJPG, YUY2 or NV12; firmware 1.5.1
+  supports MJPG only).
+* Opening the IR stream next to an MJPG RGB stream drops the IR stream to about 1 fps (§3).
+  For about 30 fps on both streams use RGB in NV12 or YUY2; the AI then delivers about
+  13–17 results per second instead of about 27.
+* Depending on your system the order in which RGB and IR are opened can matter (§3).
 * One face per result. The mesh is missing from some results (§7).
 * Exaggerated head poses can lose the face.
 * After a USB unplug the client does not reconnect by itself.
 * Whether MJPG can be forced depends on the OS backend (§2).
+* **Do not run the AI non-stop for a long time.** About 10 minutes or more of continuous AI
+  inference can heat the camera (power consumption) and freeze the video stream. Unplug the
+  camera, let it cool down, plug it in again, and plan experiments in shorter runs.
 
 ---
 
@@ -457,18 +479,17 @@ it. This SDK adds a small recorder and a spectrum plot as a starting point.
 | USB class | USB Audio Class 1, capture only (no speaker output) |
 | Sample format | signed 16-bit PCM, little endian |
 | Sample rate | 48 kHz (16 kHz is also offered) |
-| **Channels with audio** | **2** (channels 1 and 2) |
+| **Microphones** | **2**, 2 cm apart (in a 6-channel listing: channels 1 and 4, counting from 1) |
 | Processing | none: raw microphone samples, with no noise suppression, echo cancellation, automatic gain control or filtering |
 | Level | a fixed gain is applied on the camera; your OS may also show an input-volume slider that changes the level |
 
-The camera captures more microphones than it sends over USB: only two channels carry
-audio. The USB description also lists 4- and 6-channel formats, and a PC driver may offer
-one of those. On Windows the microphone appears once per host API: `WASAPI` shows 2
-channels, while `MME`, `DirectSound` and `WDM-KS` show 6. In the 6-channel entries
-**channels 1 and 2 carry audio and channels 3–6 are digital silence.**
-`example_audio.py` picks the entry with the most channels, records them all and flags
-channels that are all zero or identical to another one; pass `--channels 2` to record only
-the two real channels (or `--device <index>` to pick the WASAPI entry).
+The camera sends **2 microphones, 2 cm apart**. The USB description also lists 4- and
+6-channel formats, and a PC driver may offer one of those. On Windows the microphone appears
+once per host API: `WASAPI` shows 2 channels, while `MME`, `DirectSound` and `WDM-KS` show 6.
+**In a 6-channel recording keep channels 1 and 4 (counting from 1): they are the two
+microphones, 2 cm apart; ignore the others.** A 2-channel entry gives you the two microphones
+directly (pass `--device <index>` to pick it). `example_audio.py` picks the entry with the most
+channels, records all of them and flags channels that are all zero or identical to another one.
 
 ### Quick start
 
@@ -513,7 +534,7 @@ dBFS here is relative to an amplitude of 1.0, so a full-scale sine reads -3 dB R
 | Symptom | Action |
 |---|---|
 | `no camera microphone found` | plug the camera in; run `python example_audio.py --list` and pass `--device <index>` |
-| 6 channels but 4 are silent, or only 2 channels, on Windows | the list shows the same microphone once per host API (WASAPI 2 channels, MME / DirectSound / WDM-KS 6 channels); channels 3–6 are silent in every case; use `--channels 2` or the WASAPI entry |
+| 6 channels but most are silent, or only 2 channels, on Windows | the list shows the same microphone once per host API (WASAPI 2 channels, MME / DirectSound / WDM-KS 6 channels); with 6 channels keep channels 1 and 4 (counting from 1) and ignore the rest, or pick the 2-channel entry with `--device` |
 | All channels are silent or every sample is zero | Windows: Settings → Privacy & security → Microphone → allow desktop apps, and check the input is enabled and not muted; macOS: System Settings → Privacy & Security → Microphone → allow your terminal or editor, then restart it |
 | `PortAudio library not found` | Linux: `sudo apt install libportaudio2` |
 | Linux: the device is busy | PulseAudio or PipeWire may hold it; pick its entry in `--list`, or stop the other program |
@@ -529,15 +550,17 @@ dBFS here is relative to an amplitude of 1.0, so a full-scale sine reads -3 dB R
 | Connects, but traffic goes elsewhere | your Wi-Fi also uses `192.168.1.0/24` | disconnect Wi-Fi for the test, or change the router's subnet; the camera's address is fixed |
 | `Authentication failed` | wrong login | use the user name and password on your kit card; `LOGIWEBCAM_USER`, `LOGIWEBCAM_PASSWORD` |
 | `ValueError: SSH user name and password … required` | not supplied | export `LOGIWEBCAM_USER` and `LOGIWEBCAM_PASSWORD`, then run `python check_connection.py` |
-| `get_latest_ai_data()` returns `None` | no RGB MJPG reader running, or AI not started | open the RGB stream as MJPG and keep reading; run `cam.diagnose()` |
-| `timestamp_ms` frozen | stream is YUY2/NV12, or nobody reads the RGB stream | check `cap.get(cv2.CAP_PROP_FOURCC)`; size before FOURCC; on macOS/Windows try another backend |
-| `plugin_loaded: false` | the stream closed, or an unsupported format | (re)open the RGB MJPG stream |
+| `get_latest_ai_data()` returns `None` | no RGB reader running, or AI not started | open the RGB stream (MJPG, YUY2 or NV12) and keep reading; run `cam.diagnose()` |
+| `timestamp_ms` frozen | nobody reads the RGB stream, or the camera firmware is 1.5.1 and the stream is YUY2/NV12 | keep a `cap.read()` loop running; on firmware 1.5.1 request MJPG (size before FOURCC; check `cap.get(cv2.CAP_PROP_FOURCC)`); on macOS/Windows try another backend |
+| `plugin_loaded: false` | the stream closed, the AI restarted, or firmware 1.5.1 with a stream that is not MJPG | (re)open the RGB stream; on firmware 1.5.1 as MJPG |
+| One stream does not start, the picture freezes or the frame rate drops when RGB and IR are open together | RGB as MJPG slows the IR stream to about 1 fps; the opening order can matter depending on your system | open RGB as NV12 or YUY2; close both streams and open them in the other order (RGB first is the usual choice) |
 | Overlays offset | the frame was resized before drawing | scale the coordinates by the same factor (§4) |
 | Wrong camera opens | built-in webcam is index 0 | `--device <n>`; on Linux check `v4l2-ctl --list-devices` |
 | IR example: colour or landscape picture | wrong camera | choose another `--device` |
 | IR picture flickers | lit/unlit frames alternate | `--flicker-filter` |
 | IR example: no camera found | cable, permissions, camera busy | see the `camera_hint()` message |
 | `errno=28` in the YUV status | storage full | turn the snapshot off; use 640×480 |
+| The video freezes after the AI has run for about 10 minutes or more, or the camera is hot | the camera overheated (continuous AI inference draws power and produces heat) | unplug it, let it cool down, plug it in again; run experiments in shorter sessions and stop programs you are not using |
 | macOS: no frames / black | Camera permission missing for the terminal | System Settings → Privacy & Security → Camera |
 | Linux: cannot open `/dev/video*` | not in the `video` group | `sudo usermod -aG video $USER`, log out and in |
 | `PortAudio library not found` (Linux) | the system library is missing | `sudo apt install libportaudio2` |

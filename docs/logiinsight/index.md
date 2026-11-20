@@ -1,6 +1,6 @@
 # LogiInsight Webcam — PC Python SDK
 
-**Version 1.5.1** · Windows, macOS and Linux · Python 3.9+
+**Version 1.5.2** · Windows, macOS and Linux · Python 3.9+
 
 > **This SDK is for the LogiInsight webcam in your hackathon kit.** The AI-enabled examples
 > (face box, face mesh, AI JSON over USB networking) only work with that camera, because
@@ -15,11 +15,11 @@ Python SDK and examples for the LogiInsight hackathon webcam. From a normal PC y
   wide range of near-infrared wavelengths, lit by the camera's own illuminator,
 * read the on-device **AI results** (face box and 478-point face mesh) and switch the
   models on and off over USB networking,
-* record the camera's **microphone** (2 channels).
+* record the camera's **microphone** (2 microphones).
 
 ## Download
 
-* [logiinsight_api_sdk_v1.5.1.zip](https://github.com/Logitech/hackathons/releases/download/logiinsight-sdk-v1.5.1/logiinsight_api_sdk_v1.5.1.zip) - SDK, examples and README (MIT licensed)
+* [logiinsight_api_sdk_v1.5.2.zip](https://github.com/Logitech/hackathons/releases/download/logiinsight-sdk-v1.5.2/logiinsight_api_sdk_v1.5.2.zip) - SDK, examples and README (MIT licensed)
 
 The full reference is **[API reference](./API.md)**. Using an AI assistant? See
 [section 7](#7-using-an-ai-assistant-with-these-docs).
@@ -100,10 +100,14 @@ uv run python example_audio.py --list      # which input devices exist
 ```
 
 Allow microphone access for your terminal (macOS: System Settings → Privacy & Security →
-Microphone; Windows: Settings → Privacy & security → Microphone). On Windows the same
-microphone can be listed once per audio host API with different channel counts (`WASAPI`
-shows 2, `MME` / `DirectSound` / `WDM-KS` show 6). Only channels 1 and 2 carry audio; add
-`--channels 2` to record just those. More in [API reference](./API.md#11-audio-usb-microphone).
+Microphone; Windows: Settings → Privacy & security → Microphone).
+
+The camera has **2 microphones, 2 cm apart**. Some systems or audio APIs list the same
+microphone with **6 channels** (on Windows, `WASAPI` shows 2 while `MME` / `DirectSound` /
+`WDM-KS` show 6). If you see 6 channels, **keep channels 1 and 4** (counting from 1): those are
+the two microphones, and the others carry nothing useful. A 2-channel entry gives you the two
+microphones directly. `example_audio.py` records and plots every channel it is offered, so just
+look at channels 1 and 4. More in [API reference](./API.md#11-audio-usb-microphone).
 
 ---
 
@@ -167,6 +171,7 @@ and run it again.
 uv run python rgb_ai_capture.py --face-mesh          # 10 annotated PNG+JSON pairs in ./captures
 uv run python rgb_ai_capture.py --face-mesh --frames 30
 uv run python rgb_ai_live.py --face-mesh             # live window with overlays (q / ESC quits)
+uv run python rgb_ai_live.py --face-mesh --format NV12   # RGB as NV12 (MJPG is the default, YUY2 also works)
 ```
 
 ### Optional: try the login manually
@@ -211,8 +216,8 @@ Also try another USB 3 cable or port.
 
 | Script | Purpose | Needs SSH |
 |---|---|---|
-| `rgb_ai_capture.py` | RGB: capture frames + AI JSON, save annotated PNG/JSON pairs (`--device-snapshot` for exactly paired frames) | yes |
-| `rgb_ai_live.py` | RGB: live window with face box / mesh overlays (`--no-overlay` shows the raw picture) | yes |
+| `rgb_ai_capture.py` | RGB: capture frames + AI JSON, save annotated PNG/JSON pairs (`--format` picks the RGB format: MJPG, YUY2 or NV12; `--device-snapshot` for exactly paired frames) | yes |
+| `rgb_ai_live.py` | RGB: live window with face box / mesh overlays (`--format` picks MJPG, YUY2 or NV12; `--no-overlay` shows the raw picture) | yes |
 | `example_IR.py` | Near-infrared live view: `raw`, contrast `stretch`, `clahe`, `threshold`, `otsu` (keys: `m` mode, `+`/`-` threshold, `s` save, `q` quit) | no |
 | `example_audio.py` | Microphone: record 10 s (`--duration`), save a multi-channel `.wav` and a per-channel power-spectrum `.png`, print RMS / peak / strongest frequency | no |
 | `check_connection.py` | Step-by-step check of the SSH/SFTP link, with fixes | yes |
@@ -231,20 +236,37 @@ uv run python example_IR.py --width 1024 --height 1280
 
 ## 5. Things worth knowing
 
-* **AI results only exist while the RGB stream is open as MJPG.** On macOS (AVFoundation)
-  and Windows (MSMF) OpenCV often ignores the MJPG request and you get raw video; the
-  scripts warn when that happens. Set the size *before* the format (the examples do). If
-  the AI results stop updating, the examples print a warning after 2 seconds.
+* **The AI runs on every RGB format: MJPG, YUY2 and NV12** (Windows and macOS, camera
+  firmware 1.5.2 or newer; a kit still on firmware 1.5.1 runs the AI on MJPG only). It only
+  runs while a program reads the RGB stream. On macOS (AVFoundation) and Windows (MSMF)
+  OpenCV may ignore the format you request, and macOS picks the format itself; the AI works
+  with whichever of the three you get, and the scripts print the format you asked for and the
+  one the OS delivered (`--format MJPG|YUY2|NV12`, default MJPG). Set the size *before* the
+  format (the examples do). If the AI results stop updating, the examples print a warning
+  after 2 seconds.
+* **Rates measured at 1080p.** RGB alone: about 30 fps video and about 27 AI results per
+  second (with `--face-mesh` the 478 landmarks are in most results). Raw NV12 or YUY2 at
+  1080p needs a USB 3 cable and port.
 * **Coordinates are stream pixels**: pixels of the video size you opened (for example
   1920×1080). You can draw them directly on the frame.
 * **The camera draws nothing on the video.** Boxes and landmarks exist only in the JSON; you
   draw them yourself (the examples show how).
 * **The IR picture is portrait and grey** (256×320, 512×640 or 1024×1280).
-* **RGB and IR can run together, but not both at full rate with the AI.** With RGB as MJPG
-  (needed for the AI) each stream typically runs at about 15 fps, or the IR stream at about
-  1 fps. With RGB as NV12 or YUY2 both streams run at 30 fps, but the AI is off. Open the
-  RGB stream first.
+* **RGB and IR can run together; choose the RGB format for it.** With RGB as **NV12 or
+  YUY2** and IR (MJPG): RGB about 30 fps, IR about 29 fps, and the AI delivers about 13–17
+  results per second (fewer than the ~27 per second with RGB alone). With RGB as **MJPG** and
+  IR: RGB still about 30 fps, but the IR stream drops to about 1 fps (the two share the
+  camera's JPEG encoder). So **use NV12 or YUY2 for RGB whenever you need IR.**
+  Open the RGB stream first. Depending on your system (operating system, USB controller,
+  camera software) the order in which you open the RGB and the near-infrared (CPD) camera
+  can matter. In our Windows tests we opened RGB first and then IR and could close them in
+  either order without problems; if a stream does not start or the frame rate drops, close
+  both and open them in the other order.
 * At most one face is reported per result.
+* **Do not run the on-camera AI non-stop for a long time.** Running the AI model continuously for
+  about 10 minutes or more can make the camera hot (it draws more power), and the video stream may
+  freeze. If that happens, unplug the camera, let it cool down, and plug it in again. Plan your
+  experiments in shorter runs, and close your program when you are not using the camera.
 
 ### Why the picture and the JSON can differ (synchronization)
 
@@ -268,7 +290,8 @@ image and JSON always belong together. The price: one snapshot takes about **2 s
 1920×1080, and the picture is the frame the AI saw, which is not necessarily the frame
 the live video showed at that moment — so the *live* image and the snapshot of the same
 instant can look different. The camera's storage is small, so the examples switch the snapshot
-mode off again when they finish.
+mode off again when they finish. Leave it off when you do not need it: while it is on, the
+camera's log (`/files/LogiApp.log`) grows very fast.
 
 ### If you do not want the camera's built-in AI
 
@@ -282,9 +305,9 @@ with LogiWebcamClient() as cam:           # user name and password come from the
     cam.set_ai_config(enable_face_detection=False, enable_face_mesh=False)
 ```
 
-The setting stays until a program changes it; the RGB examples switch face detection back
-on when they start. Or simply open the RGB camera as **YUY2 or NV12** instead of MJPG: the AI
-does not run on those formats (and RGB + IR then both run at 30 fps).
+This call is the only way to switch the AI off: opening the RGB camera as YUY2 or NV12 does
+**not** stop it (the AI runs on MJPG, YUY2 and NV12). The setting stays until a program
+changes it; the RGB examples switch face detection back on when they start.
 
 ---
 
@@ -299,12 +322,14 @@ Run **`python check_connection.py`** first; it finds most problems below.
 | `SSH user name and password … required` | Set `LOGIWEBCAM_USER` and `LOGIWEBCAM_PASSWORD` (section 3, step 5) in the same terminal. |
 | `Authentication failed` | Compare with the card in your kit; copy the values exactly. In Windows `cmd` no quotes after `set`; in macOS/Linux use single quotes. |
 | `Failed to connect to 192.168.1.10` | The adapter has no `192.168.1.x` address yet (section 3), Wi-Fi uses the same subnet, or macOS needs the Local Network permission (see above). |
-| AI JSON never changes / `timestamp_ms` frozen | The RGB stream is not MJPG, or no program is reading the RGB stream. |
+| AI JSON never changes / `timestamp_ms` frozen | No program is reading the RGB stream (the AI only runs while it is open). On camera firmware 1.5.1 the stream must also be MJPG (`--format MJPG`, the default). |
+| One stream does not start, the picture freezes or the frame rate drops when RGB and IR are open together | RGB as MJPG slows the IR stream to about 1 fps: open RGB as NV12 or YUY2 (`--format NV12`). Depending on your system the opening order can matter: close both and open them in the other order (RGB first is the usual choice). |
 | `faces` is always empty | Face detection is switched off (`set_ai_config(enable_face_detection=False)`): switch it on again, or run `rgb_ai_capture.py` / `rgb_ai_live.py`, which do. |
 | `Cannot open … camera` on Linux | `ls /dev/video*`; add your user to the `video` group, log out and in. |
 | macOS: black window / no frames | Allow Camera access for the terminal app, then restart it. |
+| The video freezes after the AI has run for a long time (about 10 minutes or more), or the camera feels hot | The camera overheated. Unplug it, let it cool down, plug it in again. Run your experiments in shorter sessions and stop programs you are not using. |
 | `PortAudio library not found` (Linux) | `sudo apt install libportaudio2` |
-| `example_audio.py`: no microphone found / silent channels | Allow Microphone access for the terminal app; run `--list` and choose the camera's entry with `--device`; on Windows the entries differ in channel count (see above). |
+| `example_audio.py`: no microphone found / silent channels | Allow Microphone access for the terminal app; run `--list` and choose the camera's entry with `--device`; on Windows the entries differ in channel count. With 6 channels keep channels 1 and 4 (see the microphone section); the other channels may be silent. |
 
 More in [API reference](./API.md#12-troubleshooting).
 
