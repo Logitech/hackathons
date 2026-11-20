@@ -1,8 +1,12 @@
 # LogiInsight Webcam — PC SDK API Reference
 
-**SDK version 1.5.0** · for the LogiInsight hackathon webcam
+**SDK version 1.5.1** · for the LogiInsight hackathon webcam
 
-Quick start and installation: `README.md` in the [SDK zip](../res/logiinsight_api_sdk_v1.5.0.zip) (see also the [quick start](./)).
+> The AI features described here exist **only on the LogiInsight webcam** (the AI runs inside
+> it). With another webcam (MX Brio, your own, a laptop's built-in camera) only the plain
+> video parts apply.
+
+Quick start and installation: the [quick start](./) page, or `README.md` in the [SDK zip](../res/logiinsight_api_sdk_v1.5.1.zip).
 
 Contents
 
@@ -56,21 +60,25 @@ The SSH user sees only this sandbox:
 | `/files/logi_conf/logiwebcam_frame.status` | one-line result of the last YUV write |
 | `/files/LogiApp.log` | the camera application's log (read-only use; helpful when something fails) |
 
-The SSH login for your kit is printed on it. Never commit it: export
-`LOGIWEBCAM_PASSWORD` or pass `--password`. Default user: `hackathon`.
+The SSH user name and password are on the card in your kit. Never put them in code or
+commit them: export `LOGIWEBCAM_USER` and `LOGIWEBCAM_PASSWORD` (or pass `--user` /
+`--password`). `python check_connection.py` tests the whole link step by step.
 
 ---
 
 ## 2. Video streams
 
-The camera appears to the host as **three UVC cameras** (the name prefix is the product
-name, `LVNext` by default):
+The camera appears to the host as UVC cameras (the name prefix is the product name,
+`LVNext` by default):
 
 | UVC camera | Sensor | Formats | Use |
 |---|---|---|---|
 | `LVNext Camera` | RGB | MJPG, YUY2, NV12 | RGB video and the AI |
 | `LVNext CPD Camera` | near-infrared (monochrome) | **MJPG only**, portrait | IR video — `example_IR.py` |
-| `LVNext Hello Camera` | same near-infrared sensor | L8_IR 8-bit, 480×480 only | reserved for Windows Hello; not used by this SDK |
+| `LVNext Hello Camera` | Windows Hello stream | 8-bit, 480×480 only | not used by this SDK; camera apps cannot open it, ignore it |
+
+The camera is also a USB
+microphone (`LVNext Microphone`, §11), so camera apps list it next to the cameras.
 
 OS camera *indexes* (the number you give to `cv2.VideoCapture`) are **not fixed**: they
 depend on the OS, the backend and what else is plugged in. On Linux the V4L2 card name
@@ -108,7 +116,7 @@ cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))   # 2. then the fo
   MJPG, so always check the negotiated format.
 * **The AI needs MJPG.** On YUY2 or NV12 the JSON stops updating, with no error.
 * **Windows MSMF and macOS AVFoundation** frequently ignore the FOURCC request. Read it
-  back (`cap.get(cv2.CAP_PROP_FOURCC)`); `example.py` does and warns. On Windows the
+  back (`cap.get(cv2.CAP_PROP_FOURCC)`); `rgb_ai_capture.py` does and warns. On Windows the
   DirectShow backend (`CAP_DSHOW`) honours it more reliably.
 * Keep a reader running (`cap.read()` in a loop). The AI runs only while the RGB stream
   is open.
@@ -176,7 +184,6 @@ are plain functions on `uint8` arrays that you can import.
     because it only runs on an MJPG RGB stream.
 
   Open the RGB stream first.
-* `Hello Camera` and `CPD Camera` share one sensor: use only one of them at a time.
 
 ---
 
@@ -196,7 +203,7 @@ Therefore:
 * Face `z` is relative depth in the same units as `x` and `y`.
 * Origin is the top-left corner, `x` to the right, `y` down.
 * The frame size from `cap.read()` is the size the OS negotiated with the camera
-  (`example.py` prints it).
+  (`rgb_ai_capture.py` prints it).
 
 ---
 
@@ -212,11 +219,12 @@ Requires only `paramiko` to import. `numpy` and `cv2` are imported lazily, insid
 ### Constructor
 
 ```python
-LogiWebcamClient(ip="192.168.1.10", username="hackathon", password=None, port=22, timeout=10)
+LogiWebcamClient(ip="192.168.1.10", username=None, password=None, port=22, timeout=10)
 ```
 
-If `password` is `None`, the `LOGIWEBCAM_PASSWORD` environment variable is used; if that
-is unset too, `ValueError` is raised.
+If `username` or `password` is `None`, the `LOGIWEBCAM_USER` / `LOGIWEBCAM_PASSWORD`
+environment variable is used; if either is still missing, `ValueError` is raised. Both
+values are on the card in your kit.
 
 ### Connection
 
@@ -235,7 +243,7 @@ There is no automatic reconnect: after a USB unplug, create a new client.
 cam.set_ai_config(
     enable_face_detection=True,
     enable_face_mesh=False,        # needs face detection on, else forced off
-    enable_debug_timestamp=False,  # burn the JSON timestamp onto the video
+    enable_debug_timestamp=False,  # kept for compatibility; has no visible effect
     enable_yuv_snapshot=False,     # write a paired NV12 file each cycle
 ) -> bool
 ```
@@ -252,10 +260,17 @@ write command was issued, not that the camera has applied it; check the JSON.
 | `get_yuv_status()` | one-line status string of the last snapshot write, or `None` |
 | `get_device_snapshot(retries=3, verbose=False)` | `(bgr_ndarray, data)`; `(None, None)` if no JSON; `(None, data)` if no YUV is being written |
 | `diagnose()` | prints and returns a dict of INI/JSON/YUV probes. Run this first when results stay `None` |
+| `get_firmware_version()` | first line of the camera's version text (`… hackathon-1.5.1 <variant> <commit>`), or `None` |
 
 `get_device_snapshot()` fetches the JSON and the YUV file, checks that the timestamp in
 the JSON equals the 8-byte header of the YUV, retries on mismatch and converts NV12 → BGR
 with OpenCV.
+
+Module helpers: `firmware_matches_sdk(text)` (`True`/`False`/`None` = unknown) compares the
+firmware release with the SDK's major.minor version. `AiStalenessMonitor(max_age_s=2.0)`
+has one method, `update(data)`: call it with every result of `get_latest_ai_data()`; it returns
+a warning text **once** when `timestamp_ms` stopped changing for `max_age_s` seconds (the RGB
+stream is not MJPG, nobody reads it, or the AI is off), otherwise `None`. The RGB examples use both.
 
 Exceptions: `LogiWebcamConnectionError`, `LogiWebcamDataError`, and `ValueError` for a
 missing password.
@@ -346,19 +361,33 @@ without restarting the stream.
 |---|---|---|
 | `enable_face_detection` | `1` | face box and score |
 | `enable_face_mesh` | `0` | 478-point mesh; forced to `0` if face detection is off |
-| `enable_debug_timestamp` | `0` | draw `timestamp_ms` on the video to check sync visually |
+| `enable_debug_timestamp` | `0` | kept for compatibility; the camera no longer draws anything on the video |
 | `enable_yuv_snapshot` | `0` | write the NV12 frame next to the JSON ([§9](#9-yuv-snapshot)) |
 
 `set_ai_config()` writes all four keys at once; keys you do not pass fall back to the
 defaults shown in its signature (so it turns `enable_face_detection` **on** unless you
 pass `False`).
 
+**To switch the built-in AI off** write `enable_face_detection=False` and
+`enable_face_mesh=False`: the camera then does no AI work. Opening the RGB camera as YUY2 or
+NV12 instead of MJPG has the same effect (the AI only runs on MJPG).
+
 ---
 
 ## 9. YUV snapshot
 
+### Why the live picture and the JSON can differ
+
+The video reaches you over USB (UVC); the AI JSON is a file you fetch over SSH/SFTP. They
+are two separate paths with no shared frame number, and the AI analyses a frame while newer
+ones are already streaming. If you draw the latest JSON on the frame you just read, the boxes
+and landmarks can therefore lag a moving face. This is expected. The camera draws nothing on
+the video, so every box you see comes from this JSON.
+
 `enable_yuv_snapshot=True` makes the camera write the exact frame its models saw, so
-image and results are guaranteed to belong together.
+image and results are guaranteed to belong together. That picture is the frame the AI
+analysed, not necessarily the frame the live video showed at that moment, so the live image
+and the snapshot of the same instant can look different.
 
 * File: `/files/logi_conf/logiwebcam_frame.yuv` = 8-byte little-endian `uint64`
   timestamp, then raw **NV12** (Y plane, then interleaved UV).
@@ -370,12 +399,11 @@ image and results are guaranteed to belong together.
 * Size is the stream size: about **3.1 MB** per frame at 1920×1080 (0.46 MB at 640×480),
   and up to twice that on disk during a write. The camera's storage has only a few MB
   free: **enable it only while you capture and switch it off afterwards**
-  (`example.py --device-snapshot` does this in its `finally` block).
+  (`rgb_ai_capture.py --device-snapshot` does this in its `finally` block).
 * The JSON and the YUV are two files. `get_device_snapshot()` compares the timestamps and
   retries (3 times by default); an occasional retry message is normal at high frame rates.
-* The overlays the camera draws on the live MJPG video are **not** in the YUV;
-  `example.py` redraws them from the JSON.
-* The per-frame `frame_NNNN.json` files that `example.py` writes are not the raw camera
+* The YUV is the plain camera frame; the examples draw the boxes onto it from the JSON.
+* The per-frame `frame_NNNN.json` files that `rgb_ai_capture.py` writes are not the raw camera
   JSON: they wrap it under `device_ai_data` next to host-side fields (`frame_index`,
   `host_timestamp`, `host_time_iso`, `image_file`, `image_resolution`, `fetch_latency_ms`
   or `capture_latency_ms`).
@@ -388,8 +416,9 @@ image and results are guaranteed to belong together.
 
 | Script | What it does | Notes |
 |---|---|---|
-| `example.py` | Captures N RGB frames, fetches the JSON per frame (or snapshot pairs with `--device-snapshot`), draws face box and mesh, saves `frame_NNNN.png` + `.json` | `--frames`, `--interval`, `--width`, `--height`, `--face-mesh`, `--debug-timestamp`, `--ip`, `--user`, `--password`, `--device` |
-| `example2.py` | The same overlays live in a window | lists the cameras and asks which to use if `--device` is missing |
+| `rgb_ai_capture.py` | Captures N RGB frames, fetches the JSON per frame (or snapshot pairs with `--device-snapshot`), draws face box and mesh, saves `frame_NNNN.png` + `.json` | `--frames`, `--interval`, `--width`, `--height`, `--face-mesh`, `--device-snapshot`, `--ip`, `--user`, `--password`, `--device` |
+| `rgb_ai_live.py` | The same overlays live in a window | lists the cameras and asks which to use if `--device` is missing |
+| `check_connection.py` | Checks the SSH/SFTP link step by step (address, Wi-Fi clash, port 22, login, AI results, firmware) and prints the fix for each failure | `--ip`, `--user`, `--password`; exit code `1` if a step failed |
 | `example_IR.py` | Near-infrared live view with five processing modes | no SSH; `--device`, `--width/--height`, `--mode`, `--threshold`, `--flicker-filter`, `--frames`, `--no-display` |
 | `example_audio.py` | Records the camera microphone (10 s by default) and saves a multi-channel `.wav` plus a per-channel power-spectrum `.png`; prints RMS, peak and strongest frequency per channel (§11) | `--duration`, `--device`, `--samplerate`, `--channels`, `--output-dir`, `--list`; no SSH |
 
@@ -397,8 +426,8 @@ Every script stops cleanly on **Ctrl+C** (a second press forces an exit), releas
 camera in a `finally` block and closes all windows. Exit codes: `0` normal, `2` camera
 (or, for `example_audio.py`, microphone) not found / not openable, `3` (`example_IR.py`)
 the camera stopped delivering frames, `4` (`example_audio.py`) the audio stream failed,
-`1` error in `example.py` / `example2.py` (camera or connection), `130` interrupted with
-Ctrl+C (`example.py`, `example2.py`, `example_audio.py`).
+`1` error in `rgb_ai_capture.py` / `rgb_ai_live.py` (camera or connection), `130` interrupted with
+Ctrl+C (`rgb_ai_capture.py`, `rgb_ai_live.py`, `example_audio.py`).
 
 ### Limits to keep in mind
 
@@ -497,8 +526,8 @@ dBFS here is relative to an amplitude of 1.0, so a full-scale sine reads -3 dB R
 |---|---|---|
 | `Failed to connect to 192.168.1.10:22` | the PC's USB-Ethernet adapter has no `192.168.1.x` address, or the cable is out | set `192.168.1.20/24` (README §3); `ping 192.168.1.10` |
 | Connects, but traffic goes elsewhere | your Wi-Fi also uses `192.168.1.0/24` | disconnect Wi-Fi for the test, or change the router's subnet; the camera's address is fixed |
-| `Authentication failed` | wrong login | use the one on your kit; `LOGIWEBCAM_PASSWORD` |
-| `ValueError: SSH password … is required` | no password supplied | export `LOGIWEBCAM_PASSWORD` |
+| `Authentication failed` | wrong login | use the user name and password on your kit card; `LOGIWEBCAM_USER`, `LOGIWEBCAM_PASSWORD` |
+| `ValueError: SSH user name and password … required` | not supplied | export `LOGIWEBCAM_USER` and `LOGIWEBCAM_PASSWORD`, then run `python check_connection.py` |
 | `get_latest_ai_data()` returns `None` | no RGB MJPG reader running, or AI not started | open the RGB stream as MJPG and keep reading; run `cam.diagnose()` |
 | `timestamp_ms` frozen | stream is YUY2/NV12, or nobody reads the RGB stream | check `cap.get(cv2.CAP_PROP_FOURCC)`; size before FOURCC; on macOS/Windows try another backend |
 | `plugin_loaded: false` | the stream closed, or an unsupported format | (re)open the RGB MJPG stream |

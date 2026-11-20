@@ -11,7 +11,7 @@
     - [Quick start](./logiinsight/)
   - Resources links
     - [API reference](./logiinsight/API.md)
-    - [SDK and examples (zip)](./res/logiinsight_api_sdk_v1.5.0.zip)
+    - [SDK and examples (zip)](./res/logiinsight_api_sdk_v1.5.1.zip)
 
 - Logi Gaze Tracker
   - When:
